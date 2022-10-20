@@ -1,0 +1,211 @@
+﻿@page "/"
+@using HCILabForm.Data
+@using HCILabForm.Models
+@inject IMessageService _msg
+@inject ApplicationDbContext _db
+<PageTitle>Index</PageTitle>
+<style>
+    body {
+        background-color: whitesmoke;
+    }
+
+    .formdiv {
+        max-width: 60%;
+        background-color: white;
+        border-radius: 20px;
+        padding: 20px;
+    }
+
+    .validation-message {
+        align-self: flex-start;
+        display: flex;
+    }
+
+    .mud-input-label {
+    }
+</style>
+<br />
+<center>
+    <div class="formdiv">
+        <h3>University Form</h3>
+        <EditForm Model="_uni" OnValidSubmit="ValidSubmitFormFunc">
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <MudGrid>
+                
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="_uni.Name" Label="Name"  Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(Illegal))" Variant="Variant.Outlined"></MudTextField>
+                    <ValidationMessage For="()=>_uni.Name"></ValidationMessage>
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="_uni.FatherName" Label="Father Name" Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(Illegal))" Variant="Variant.Outlined"></MudTextField>
+                    <ValidationMessage For="()=>_uni.FatherName"></ValidationMessage>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField Counter="13" Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" @bind-Value="_uni.CNIC" Label="Enter CNIC" Variant="Variant.Outlined"></MudTextField>
+                    <ValidationMessage For="()=>_uni.CNIC"></ValidationMessage>
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudSelect T="string" @bind-Value="_uni.Gender" Label="Select Gender" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("Male")" />
+                        <MudSelectItem Value="@("Female")" />
+                        <MudSelectItem Value="@("Others")" />
+                    </MudSelect>
+                    <ValidationMessage For="()=>_uni.Gender"></ValidationMessage>
+                </MudItem>
+
+                <MudItem xs="4">
+                    <MudSelect Dense="true" T="string" @bind-Value="_uni.Program" Label="Select Program" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("BCS")" />
+                        <MudSelectItem Value="@("EPE")" />
+                        <MudSelectItem Value="@("CVE")" />
+                        <MudSelectItem Value="@("BSE")" />
+                    </MudSelect>
+                    <ValidationMessage For="()=>_uni.Program"></ValidationMessage>
+                </MudItem>
+                <MudItem xs="4">
+                    <MudSelect Dense="true" T="string" @bind-Value="_uni.Campus" Label="Select Campus" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("Islamabad")" />
+                        <MudSelectItem Value="@("Abbottbad")" />
+                        <MudSelectItem Value="@("Lahore")" />
+                        <MudSelectItem Value="@("Sahiwal")" />
+                    </MudSelect>
+                    <ValidationMessage For="()=>_uni.Campus"></ValidationMessage>
+                </MudItem>
+                <MudItem xs="4">
+                    <MudSelect Dense="true" T="string" @bind-Value="_uni.PreviousGrade" Label="Previous Grade" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("A")" />
+                        <MudSelectItem Value="@("B")" />
+                        <MudSelectItem Value="@("C")" />
+                        <MudSelectItem Value="@("D")" />
+                    </MudSelect>
+                    <ValidationMessage For="()=>_uni.PreviousGrade"></ValidationMessage>
+                </MudItem>
+
+
+                
+
+                <MudItem xs="1">
+                    <div class="pt-3">
+                        <MudCheckBox @onclick="TestClick" @bind-Checked="@_uni.isForeign" Label="Is&nbsp;Foreign?" Color="MudBlazor.Color.Primary"></MudCheckBox>
+                    </div>
+                </MudItem>
+                <MudItem xs="1">
+
+                </MudItem>
+                @if (!_uni.isForeign)
+                {
+                    <MudItem xs="5">
+                        <div>
+                            <MudAutocomplete T="string" Label="Select City" @bind-Value="_uni.City" SearchFunc="@Search1" Variant="Variant.Outlined" />
+                            <ValidationMessage For="()=>_uni.City"></ValidationMessage>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="5">
+                        <MudSelect Dense="true" T="string" @bind-Value="_uni.Domicile" Label="Select Domicile" Variant="Variant.Outlined">
+                            <MudSelectItem Value="@("Islamabad")" />
+                            <MudSelectItem Value="@("Abbottbad")" />
+                            <MudSelectItem Value="@("Lahore")" />
+                            <MudSelectItem Value="@("Sahiwal")" />
+                        </MudSelect>
+                        <ValidationMessage For="()=>_uni.Domicile"></ValidationMessage>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="4">
+                        <MudSelect Dense="true" T="string" @bind-Value="_uni.Country" Label="Select Country" Variant="Variant.Outlined">
+                            <MudSelectItem Value="@("China")" />
+                            <MudSelectItem Value="@("Afghanistan")" />
+                            <MudSelectItem Value="@("Iran")" />
+                            <MudSelectItem Value="@("Iraq")" />
+                        </MudSelect>
+                        <ValidationMessage For="()=>_uni.Country"></ValidationMessage>
+                    </MudItem>
+                }
+
+            </MudGrid>
+            <br />
+            <br />
+            <MudButton Variant="Variant.Outlined" ButtonType="MudBlazor.ButtonType.Submit" Color="MudBlazor.Color.Primary" Size="Size.Large">Submit Form</MudButton>
+
+        </EditForm>
+    </div>
+</center>
+@code {
+
+    private IEnumerable<string> Illegal(string ch)
+    {
+        if (!string.IsNullOrEmpty(ch))
+        {
+            for (int i = 0; i < ch?.Length; i++)
+            {
+                if (!("qwertyuiopasdfghjklzxcvbnm ").Contains(ch.ElementAt(i).ToString().ToLower()))
+                {
+                    yield return "Illegal character";
+                }
+            }
+        }
+    }
+
+
+    private IEnumerable<string> MaxCharacters(string ch)
+    {
+        if (!string.IsNullOrEmpty(ch) && 13 < ch?.Length)
+            yield return "Max 13 characters";
+        if (!string.IsNullOrEmpty(ch))
+        {
+            for (int i = 0; i < ch?.Length; i++)
+            {
+                if (!("1234567890").Contains(ch.ElementAt(i).ToString().ToLower()))
+                {
+                    yield return "Illegal character";
+                }
+            }
+        }
+    }
+    private string[] city = { "Islamabad", "Abbottabad" };
+    public UniForm _uni { get; set; } = new();
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return city;
+        return city.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+    public void ValidSubmitFormFunc()
+    {
+        _msg.Success("Successfully Submitted", 3);
+        //_db.UniForms.Add(_uni);
+        //_db.SaveChanges();
+        _uni = new();
+    }
+
+    public bool render { get; set; } = true;
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _uni.Country = ".";
+
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    public void TestClick()
+    {
+        if (!_uni.isForeign)
+        {
+            _uni.City = ".";
+            _uni.Domicile = ".";
+            _uni.Country = null;
+        }
+        if (_uni.isForeign)
+        {
+            _uni.Country = ".";
+            _uni.City = null;
+            _uni.Domicile = null;
+        }
+        StateHasChanged();
+    }
+}
