@@ -1,0 +1,22 @@
+﻿@page
+@using HCILabForm.Models;
+@using Microsoft.AspNetCore.Identity
+@attribute [IgnoreAntiforgeryToken]
+@inject SignInManager<ApplicationUser> _signInManager
+
+
+    @functions {
+        public async Task<IActionResult> OnGet(string username, string password)
+        {
+            if (username != null && password != null)
+            {
+;
+                if ((await _signInManager.PasswordSignInAsync(username, password, false, false)).Succeeded)
+                {
+                    return Redirect("~/");
+                }
+            }
+            return Redirect("~/login");
+        }
+    }
+

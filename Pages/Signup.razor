@@ -1,0 +1,84 @@
+﻿@page "/register"
+@using HCILabForm.Models;
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<ApplicationUser> _userManager
+@inject IMessageService _msg
+@inject NavigationManager _nav
+<br />
+<br />
+<EditForm Model="@registerVM" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="2" sm="2"></MudItem>
+        <MudItem xs="6" sm="6">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudIcon Class="d-flex align-cente<Signup />r justify-center " Icon="@Icons.Filled.PersonAdd"></MudIcon>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Register Now</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label="First Name" HelperText="Enter First Name"
+                                  @bind-Value="registerVM.firstname" For="@(() => registerVM.firstname)" />
+                    <MudTextField Label="Last Name" HelperText="Enter Last Name"
+                                  @bind-Value="registerVM.lastname" For="@(() => registerVM.lastname)" />
+                    <MudTextField Label="Username" HelperText="Enter Username"
+                                  @bind-Value="registerVM.username" For="@(() => registerVM.username)" />
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="registerVM.password" For="@(() => registerVM.password)" InputType="InputType.Password" />
+                    <MudTextField Label="Repeat registerVM" HelperText="Repeat the password" Class="mt-3"
+                                  @bind-Value="registerVM.repeatPassword" For="@(() => registerVM.repeatPassword)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Disabled="@_processing" Variant="Variant.Outlined" Color="MudBlazor.Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" Class="ml-auto">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText>Register</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Register</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="2" sm="2"></MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    public RegisterVM registerVM { get; set; } = new();
+    private bool _processing = false;
+
+    private async void OnValidSubmit(EditContext context)
+    {
+        _processing = true;
+        StateHasChanged();
+
+        var _user = new ApplicationUser
+            {
+                UserName = registerVM.username,
+                //Email = registerVM.username,
+                FirstName = registerVM.firstname,
+                LastName = registerVM.lastname
+            };
+        var result = await _userManager.CreateAsync(_user, registerVM.password);
+        if (result.Succeeded)
+        {
+            _msg.Success("Account Created Successfully!",5);
+            _nav.NavigateTo("login");
+        }
+        else
+        {
+            _msg.Error(result.Errors.FirstOrDefault().Description);
+        }
+        _processing = false;
+        StateHasChanged();
+    }
+
+}

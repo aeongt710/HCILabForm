@@ -191,10 +191,11 @@
     }
     public void ValidSubmitFormFunc()
     {
-        _msg.Success("Successfully Submitted", 3);
-        //_db.UniForms.Add(_uni);
-        //_db.SaveChanges();
+        _msg.Success("Successfully Submitted", 5);
+        _db.UniForms.Add(_uni);
+        _db.SaveChanges();
         _uni = new();
+        _uni.Country = ".";
     }
 
     public bool render { get; set; } = true;

@@ -1,0 +1,85 @@
+﻿@page "/login"
+@using HCILabForm.Models;
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<ApplicationUser> _userManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISnackbar Snackbar
+@inject NavigationManager _nav
+@inject IMessageService _msg
+<br />
+<br />
+<form action="Identity/Account/Login" method="post">
+
+    @*<DataAnnotationsValidator />*@
+    <MudGrid>
+        <MudItem xs="2" sm="2"></MudItem>
+        <MudItem xs="6" sm="6">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudIcon Class="d-flex align-center justify-center " Icon="@Icons.Filled.Person"></MudIcon>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Signin</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label="Username" HelperText="Enter Username"
+                                  @bind-Value="loginVM.username" For="@(() => loginVM.username)" />
+                    <MudTextField Label="Password" HelperText="Enter Password" Class="mt-3"
+                                  @bind-Value="loginVM.password" For="@(() => loginVM.password)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Disabled="@_processing" Variant="Variant.Outlined" Color="MudBlazor.Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" Class="ml-auto">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText>Login</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Login</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="2" sm="2"></MudItem>
+    </MudGrid>
+
+@*</EditForm>*@
+
+</form>
+<NavLink href="Identity/Account/Login">
+    Redirect to Login
+</NavLink>
+@code {
+    public LoginVM loginVM { get; set; } = new();
+    private bool _processing = false;
+
+    public async void testFunc()
+    {
+    }
+
+    private async void OnValidSubmit()
+    {
+        _processing = true;
+        StateHasChanged();
+        var user = await _userManager.FindByNameAsync(loginVM.username);
+        if (user is null)
+        {
+            _msg.Error("Account not found!");
+            _processing = false;
+            StateHasChanged();
+            return;
+        }
+        var test = await SignInManager.CheckPasswordSignInAsync(user, loginVM.password, false);
+        if (test.Succeeded)
+        {
+            _msg.Success("Logging in...");
+            _nav.NavigateTo("Identity/Account/Login?name=" + loginVM.username + "&" + "password=" + loginVM.password);
+        }
+        _processing = false;
+        StateHasChanged();
+    }
+}
