@@ -3,6 +3,8 @@
 @using HCILabForm.Models
 @inject IMessageService _msg
 @inject ApplicationDbContext _db
+@inject IDialogService DialogService
+@inject ModalService _modalService
 <PageTitle>Index</PageTitle>
 <style>
     body {
@@ -28,26 +30,31 @@
 <center>
     <div class="formdiv">
         <h3>University Form</h3>
-        <EditForm Model="_uni" OnValidSubmit="ValidSubmitFormFunc">
+        <EditForm Model="_uni" OnValidSubmit="ValidSubmitFormFunc"  OnInvalidSubmit="InvalidSubmitFunc">
             <DataAnnotationsValidator></DataAnnotationsValidator>
             <MudGrid>
                 
                 <MudItem xs="6">
-                    <MudTextField @bind-Value="_uni.Name" Label="Name"  Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(Illegal))" Variant="Variant.Outlined"></MudTextField>
+                    <MudTextField @bind-Value="_uni.Name" HelperText="Enter your name (Alphabets Only)" Label="Name" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Abc" Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(Illegal))" Variant="Variant.Outlined"></MudTextField>
                     <ValidationMessage For="()=>_uni.Name"></ValidationMessage>
                 </MudItem>
 
                 <MudItem xs="6">
-                    <MudTextField @bind-Value="_uni.FatherName" Label="Father Name" Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(Illegal))" Variant="Variant.Outlined"></MudTextField>
+                    <MudTextField @bind-Value="_uni.FatherName" HelperText="Enter your name Father name (Alphabets Only)" Label="Father Name" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Abc" Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(Illegal))" Variant="Variant.Outlined"></MudTextField>
                     <ValidationMessage For="()=>_uni.FatherName"></ValidationMessage>
                 </MudItem>
-                <MudItem xs="6">
-                    <MudTextField Counter="13" Immediate="true" Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" @bind-Value="_uni.CNIC" Label="Enter CNIC" Variant="Variant.Outlined"></MudTextField>
+                <MudItem xs="5" Class="pr-0  mr-0">
+                    <MudTextField Counter="13" Immediate="true" HelperText="Enter CNIC number 13 digits long" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Badge" Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" @bind-Value="_uni.CNIC" Label="Enter CNIC" Variant="Variant.Outlined"></MudTextField>
                     <ValidationMessage For="()=>_uni.CNIC"></ValidationMessage>
+                </MudItem>
+                <MudItem xs="1" Class="d-flex align-center justify-center mud-width-full pl-0 m-lg-0 ml-0">
+                    <MudTooltip Text="Need help?">
+                        <a href="help" target="_blank"><MudIcon Icon="@Icons.Filled.Help"></MudIcon></a>
+                    </MudTooltip>
                 </MudItem>
 
                 <MudItem xs="6">
-                    <MudSelect T="string" @bind-Value="_uni.Gender" Label="Select Gender" Variant="Variant.Outlined">
+                    <MudSelect T="string" @bind-Value="_uni.Gender" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.PeopleAlt" Label="Select Gender" Variant="Variant.Outlined">
                         <MudSelectItem Value="@("Male")" />
                         <MudSelectItem Value="@("Female")" />
                         <MudSelectItem Value="@("Others")" />
@@ -56,7 +63,7 @@
                 </MudItem>
 
                 <MudItem xs="4">
-                    <MudSelect Dense="true" T="string" @bind-Value="_uni.Program" Label="Select Program" Variant="Variant.Outlined">
+                    <MudSelect Dense="true" T="string" @bind-Value="_uni.Program" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Category" Label="Select Program" Variant="Variant.Outlined">
                         <MudSelectItem Value="@("BCS")" />
                         <MudSelectItem Value="@("EPE")" />
                         <MudSelectItem Value="@("CVE")" />
@@ -65,7 +72,7 @@
                     <ValidationMessage For="()=>_uni.Program"></ValidationMessage>
                 </MudItem>
                 <MudItem xs="4">
-                    <MudSelect Dense="true" T="string" @bind-Value="_uni.Campus" Label="Select Campus" Variant="Variant.Outlined">
+                    <MudSelect Dense="true" T="string" @bind-Value="_uni.Campus" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.School" Label="Select Campus" Variant="Variant.Outlined">
                         <MudSelectItem Value="@("Islamabad")" />
                         <MudSelectItem Value="@("Abbottbad")" />
                         <MudSelectItem Value="@("Lahore")" />
@@ -74,21 +81,20 @@
                     <ValidationMessage For="()=>_uni.Campus"></ValidationMessage>
                 </MudItem>
                 <MudItem xs="4">
-                    <MudSelect Dense="true" T="string" @bind-Value="_uni.PreviousGrade" Label="Previous Grade" Variant="Variant.Outlined">
+                    <MudSelect Dense="true" T="string" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Grade" @bind-Value="_uni.PreviousGrade" Label="Previous Grade" Variant="Variant.Outlined">
                         <MudSelectItem Value="@("A")" />
                         <MudSelectItem Value="@("B")" />
                         <MudSelectItem Value="@("C")" />
                         <MudSelectItem Value="@("D")" />
                     </MudSelect>
-                    <ValidationMessage For="()=>_uni.PreviousGrade"></ValidationMessage>
+                    <ValidationMessage For="()=>_uni.PreviousGrade" ></ValidationMessage>
                 </MudItem>
-
 
                 
 
                 <MudItem xs="1">
                     <div class="pt-3">
-                        <MudCheckBox @onclick="TestClick" @bind-Checked="@_uni.isForeign" Label="Is&nbsp;Foreign?" Color="MudBlazor.Color.Primary"></MudCheckBox>
+                        <MudCheckBox @onclick="TestClick" @bind-Checked="@_uni.isForeign" Label="Foreign?" Color="MudBlazor.Color.Primary"></MudCheckBox>
                     </div>
                 </MudItem>
                 <MudItem xs="1">
@@ -98,12 +104,12 @@
                 {
                     <MudItem xs="5">
                         <div>
-                            <MudAutocomplete T="string" Label="Select City" @bind-Value="_uni.City" SearchFunc="@Search1" Variant="Variant.Outlined" />
+                            <MudAutocomplete T="string" Label="Select City" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.LocationCity" @bind-Value="_uni.City" SearchFunc="@Search1" Variant="Variant.Outlined" />
                             <ValidationMessage For="()=>_uni.City"></ValidationMessage>
                         </div>
                     </MudItem>
                     <MudItem xs="5">
-                        <MudSelect Dense="true" T="string" @bind-Value="_uni.Domicile" Label="Select Domicile" Variant="Variant.Outlined">
+                        <MudSelect Dense="true" T="string" @bind-Value="_uni.Domicile" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.DocumentScanner" Label="Select Domicile" Variant="Variant.Outlined">
                             <MudSelectItem Value="@("Islamabad")" />
                             <MudSelectItem Value="@("Abbottbad")" />
                             <MudSelectItem Value="@("Lahore")" />
@@ -115,14 +121,18 @@
                 else
                 {
                     <MudItem xs="4">
-                        <MudSelect Dense="true" T="string" @bind-Value="_uni.Country" Label="Select Country" Variant="Variant.Outlined">
+                        @*<MudItem xs="12" sm="8" md="8">*@
+                        <MudAutocomplete T="string" Dense="true" FullWidth="true" Label="Select Country" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.LocationOn" @bind-Value="_uni.Country" SearchFunc="@Search1" Variant="Variant.Outlined" />
+                        @*</MudItem>*@
+                        @*<MudSelect Dense="true" T="string" @bind-Value="_uni.Country" Label="Select Country" Variant="Variant.Outlined">
                             <MudSelectItem Value="@("China")" />
                             <MudSelectItem Value="@("Afghanistan")" />
                             <MudSelectItem Value="@("Iran")" />
                             <MudSelectItem Value="@("Iraq")" />
-                        </MudSelect>
+                        </MudSelect>*@
                         <ValidationMessage For="()=>_uni.Country"></ValidationMessage>
                     </MudItem>
+                    
                 }
 
             </MudGrid>
@@ -134,7 +144,7 @@
     </div>
 </center>
 @code {
-
+    private string value1;
     private IEnumerable<string> Illegal(string ch)
     {
         if (!string.IsNullOrEmpty(ch))
@@ -143,12 +153,16 @@
             {
                 if (!("qwertyuiopasdfghjklzxcvbnm ").Contains(ch.ElementAt(i).ToString().ToLower()))
                 {
-                    yield return "Illegal character";
+                    yield return "Illegal character, please enter Alphabets only";
                 }
             }
         }
     }
 
+    private void InvalidSubmitFunc()
+    {
+        _msg.Error("Please resolve error, then submit", 3);
+    }
 
     private IEnumerable<string> MaxCharacters(string ch)
     {
@@ -165,13 +179,15 @@
             }
         }
     }
-    private string[] city = { "Islamabad", "Abbottabad" };
+    //private string[] city = { "Islamabad", "Abbottabad", "China", "Afghanistan" };
+
+    private string[] country = { "Iran","Iraq", "US", "China", "Afghanistan" };
     public UniForm _uni { get; set; } = new();
     private async Task<IEnumerable<string>> Search1(string value)
     {
         if (string.IsNullOrEmpty(value))
-            return city;
-        return city.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+            return country;
+        return country.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
     public void ValidSubmitFormFunc()
     {
@@ -187,11 +203,23 @@
         if (firstRender)
         {
             _uni.Country = ".";
-
         }
         base.OnAfterRender(firstRender);
     }
 
+    private void HandleInfo()
+    {
+        RenderFragment content =
+    @<a href="https://mudblazor.com/components/dialog#scrollable-dialog" name="img-box">
+        <img style="width: 278px;" src="https://media.istockphoto.com/id/494616116/vector/video-player-interface-for-web-vector.jpg?s=612x612&w=0&k=20&c=fm5-dMnvv-xZyPxJJq_bF_ZGmkJb1TmHn5w16QoouAI=" />
+    </a>;
+        _modalService.Info(new ConfirmOptions()
+            {
+                Title = "Click below to watch tutorial",
+                Content = content,
+                
+            });
+    }
     public void TestClick()
     {
         if (!_uni.isForeign)
@@ -208,4 +236,6 @@
         }
         StateHasChanged();
     }
+
+
 }

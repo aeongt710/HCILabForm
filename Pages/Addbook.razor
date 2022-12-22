@@ -1,0 +1,100 @@
+﻿@page "/addbook"
+@using System.ComponentModel.DataAnnotations
+@*@inject HttpClient Http*@
+@inject ISnackbar Snackbar
+<br />
+<br />
+<EditForm Model="@registerVM" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="2" sm="2"></MudItem>
+        <MudItem xs="6" sm="6">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudIcon Class="d-flex align-center justify-center " Icon="@Icons.Filled.PersonAdd"></MudIcon>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Register Now</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label="First Name" HelperText="Enter First Name"
+                                  @bind-Value="registerVM.firstname" For="@(() => registerVM.firstname)" />
+                    <MudTextField Label="Last Name" HelperText="Enter Last Name"
+                                  @bind-Value="registerVM.lastname" For="@(() => registerVM.lastname)" />
+                    <MudTextField Label="Username" HelperText="Enter Username"
+                                  @bind-Value="registerVM.username" For="@(() => registerVM.username)" />
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="registerVM.password" For="@(() => registerVM.password)" InputType="InputType.Password" />
+                    <MudTextField Label="Re-enter Password" HelperText="Re-enter Password" Class="mt-3"
+                                  @bind-Value="registerVM.repeatPassword" For="@(() => registerVM.repeatPassword)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Disabled="@_processing" Variant="Variant.Outlined" Color="MudBlazor.Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" Class="ml-auto">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText>Register</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Register</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="2" sm="2"></MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    public RegisterVM registerVM { get; set; } = new();
+    private bool _processing = false;
+
+    private async void OnValidSubmit(EditContext context)
+    {
+        _processing = true;
+        StateHasChanged();
+
+        //var res = await Http.PostAsJsonAsync<RegisterVM>("Account", registerVM);
+
+        //if (res.StatusCode == System.Net.HttpStatusCode.OK)
+        await Task.Delay(2000);
+        {
+            Snackbar.Add("Account Created Successfully", Severity.Success, config => { config.ShowCloseIcon = false; });
+            registerVM = new();
+        }
+        //else if (res.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+        //{
+        //    //var error = await res.Content.ReadAsStringAsync();
+        //    Snackbar.Add(error, Severity.Error, config => { config.ShowCloseIcon = false; });
+        //}
+        _processing = false;
+        StateHasChanged();
+    }
+
+
+    public class RegisterVM
+    {
+        [Required]
+        [EmailAddress]
+        public string username { get; set; }
+
+
+        [Required]
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+        public string password { get; set; }
+
+        [Required]
+        [Compare(nameof(password), ErrorMessage = "Password Mismatch")]
+        public string repeatPassword { get; set; }
+
+        [Required]
+        public string firstname { get; set; }
+        [Required]
+        public string lastname { get; set; }
+    }
+
+}
